@@ -7,10 +7,44 @@
  */
 
 import React from "react";
-import { Image, View, Text, Button } from "react-native";
-import { createStackNavigator, createAppContainer, createBottomTabNavigator } from "react-navigation";
+import { Image, View, Text, Button, TouchableOpacity, StyleSheet } from "react-native";
+import { createStackNavigator, createAppContainer, createBottomTabNavigator, TabRouter, createNavigator, StackRouter } from "react-navigation";
+import createSideTabNavigator from './navigators/createSideTabNavigator'
+
+const ScreenTable = {
+  Home: 'home',
+  Details: 'details',
+}
+
+const LabelTable = {
+  Home: '首页',
+  Details: '详情',
+}
+
+const NavigationOptions = {
+  defaultNavigationOptions: {
+    headerStyle: {
+      backgroundColor: '#f4511e', // 标题栏背景颜色
+    },
+    headerTintColor: '#fff', // 文字颜色
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    }
+  },
+  navigationOptions: {
+    tabBarLabel: 'HOME!',
+  },
+}
 
 class SettingScreen extends React.Component {
+  constructor(props) {
+    super(props)
+    console.log("SettingScreen init")
+  }
+
+  componentWillMount() {
+    console.log("SettingScreen will mount")
+  }
   render() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -25,6 +59,14 @@ class SettingScreen extends React.Component {
 
 
 class ProfileScreen extends React.Component {
+  constructor(props) {
+    super(props)
+    console.log("ProfileScreen init")
+  }
+
+  componentWillMount() {
+    console.log("ProfileScreen will mount")
+  }
   render() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -39,15 +81,6 @@ class ProfileScreen extends React.Component {
 }
 
 
-const SettingStack = createStackNavigator(
-  {
-    setting: SettingScreen,
-    profile: ProfileScreen
-  }
-)
-
-const SettingContainer = createAppContainer(SettingStack)
-
 
 class ImageTitle extends React.Component {
   render() {
@@ -59,8 +92,11 @@ class ImageTitle extends React.Component {
     )
   }
 }
-
 class HomeScreen extends React.Component {
+  constructor(props) {
+    super(props)
+    console.log("HomeScreen init")
+  }
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Home',
@@ -74,12 +110,16 @@ class HomeScreen extends React.Component {
       ),
       headerLeft: (
         <Button
-          onPress={() => navigation.navigate('Modal')}
+          onPress={() => navigation.navigate('details')}
           title="info"
           color='#000'
         />
       )
     }
+  }
+
+  componentWillMount() {
+    console.log("HomeScreen will mount")
   }
 
   componentDidMount() {
@@ -92,18 +132,18 @@ class HomeScreen extends React.Component {
 
   _increaseCount = () => {
     this.setState({
-      count: this.state.count + 1
+      count: Math.floor(Math.random() * 100),
     })
   }
   render() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Text>Home Screen</Text>
-        <Text>count: {this.state.count}</Text>
+        <Text>count: {Math.floor(Math.random() * 100)}</Text>
         <Button
           title="go to Details"
-          onPress={() => this.props.navigation.navigate('Details', {
-            "itemId": 86,
+          onPress={() => this.props.navigation.navigate('details', {
+            "itemId": Math.floor(Math.random() * 100),
             "otherParams": "hello world"
           })}
         />
@@ -111,16 +151,19 @@ class HomeScreen extends React.Component {
           title="setting"
           onPress={() => this.props.navigation.navigate('setting')}
         />
-        <View style={{ backgroundColor: 'red' }}>
-
-          <SettingContainer />
-        </View>
       </View >
     );
   }
 }
 
 class DetailsScreen extends React.Component {
+  constructor(props) {
+    super(props)
+    console.log("DetailsScreen init")
+  }
+  componentWillMount() {
+    console.log("DetailsScreen will mount")
+  }
   static navigationOptions = ({ navigation, navigationOptions }) => {
     return {
       title: navigation.getParam('otherParams', 'from navigation'),
@@ -141,7 +184,10 @@ class DetailsScreen extends React.Component {
         <Text>otherParams: {JSON.stringify(otherParams)}</Text>
         <Button
           title="go to Details again"
-          onPress={() => this.props.navigation.push('Details')}
+          onPress={() => this.props.navigation.push('details',
+            {
+              itemId: Math.floor(Math.random() * 100),
+            })}
         />
         <Button
           title="go back"
@@ -149,7 +195,7 @@ class DetailsScreen extends React.Component {
         />
         <Button
           title="go to Home"
-          onPress={() => this.props.navigation.navigate('Home')}
+          onPress={() => this.props.navigation.navigate('home')}
         />
         <Button
           title="change title"
@@ -164,25 +210,11 @@ class DetailsScreen extends React.Component {
   }
 }
 
-class ModalScreen extends React.Component {
-  render() {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 30 }}>display modal</Text>
-        <Button title="dismiss"
-          onPress={() => this.props.navigation.goBack()}
-        />
-      </View>
-    )
-  }
-}
-
-
 
 const HomeStack = createStackNavigator(
   {
-    Home: HomeScreen,
-    Details: DetailsScreen,
+    home: HomeScreen,
+    details: DetailsScreen
   },
   {
     defaultNavigationOptions: {
@@ -197,33 +229,141 @@ const HomeStack = createStackNavigator(
     navigationOptions: {
       tabBarLabel: 'HOME!',
     },
-  }
-
-)
-
-const AppNavigator = createBottomTabNavigator(
-  {
-    Home: HomeStack,
-    Setting: SettingStack
-  },
-  {
-    initialRouteName: "Home",
-  }
-);
-
-const ModalNavigator = createStackNavigator(
-  {
-    Home: HomeStack,
-  },
-  {
     headerMode: 'none'
   }
 )
 
-const AppContainer = createAppContainer(ModalNavigator);
+const SettingStack = createStackNavigator(
+  {
+    setting: SettingScreen,
+    profile: ProfileScreen
+  }
+)
+
+
+
+const MainRoutes = {
+  home: {
+    screen: HomeScreen
+  },
+  details: {
+    screen: DetailsScreen
+  },
+}
+
+class SideBar extends React.Component {
+  render() {
+    const { navigation } = this.props
+    const { routes } = navigation.state;
+    return (
+      <View style={styles.sideBarContainer}>
+        <View style={styles.sideBarContent}>
+          {routes.map(route =>
+            (
+              <TouchableOpacity
+                onPress={() => {
+                  console.log("导航：" + route.routeName)
+                  navigation.navigate(route.routeName)
+                }
+                }
+                style={styles.sideBarTab}
+                key={route.routeName}
+              >
+                <Text>{route.routeName}</Text>
+              </TouchableOpacity>
+            )
+          )}
+        </View>
+      </View>
+    )
+  }
+}
+
+class SideBarView extends React.Component {
+  render() {
+    const { navigation, renderScene } = this.props;
+    const { routes, index } = navigation.state;
+    return (
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <SideBar navigation={navigation} />
+        {/* <ActiveScreen navigation={descriptor.navigation} state={descriptor.state} /> */}
+        <ScreenContainer style={styles.pages}>
+          {routes.map((route, index) => {
+
+            const isFocused = navigation.state.index === index;
+
+            return <ResourceSavingScene key={route.key} style={StyleSheet.absoluteFill} isVisible={isFocused}>
+              {renderScene({ route })}
+            </ResourceSavingScene>;
+          })}
+        </ScreenContainer>
+      </View>
+    )
+  }
+}
+
+const CustomTabRouter = TabRouter(MainRoutes,
+  {
+    defaultNavigationOptions: NavigationOptions.defaultNavigationOptions,
+    headerMode: 'true'
+  }
+)
+
+const CustomStackRouter = StackRouter(MainRoutes)
+
+
+const BottomNavigator = createBottomTabNavigator(
+  {
+    home: HomeScreen,
+    details: DetailsScreen
+  },
+  {
+    initialRouteName: "home",
+    defaultNavigationOptions: NavigationOptions.defaultNavigationOptions,
+    headerMode: 'true'
+  }
+);
+const SideBarNavigator = createSideTabNavigator(
+  {
+    home: HomeScreen,
+    details: DetailsScreen
+  },
+  {
+    initialRouteName: "home",
+    defaultNavigationOptions: NavigationOptions.defaultNavigationOptions,
+    headerMode: 'true'
+  }
+);
+// const AppContainer = createAppContainer(createNavigator(SideBarView, CustomTabRouter, {}));
+const AppContainer = createAppContainer(SideBarNavigator);
+
+// const AppContainer = createAppContainer(AppNavigator);
 
 export default class App extends React.Component {
   render() {
     return <AppContainer />;
+  }
+}
+
+const styles = {
+  sideBarContainer: {
+    width: 100,
+    height: '100%',
+  },
+  sideBarContent: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderRightWidth: 0.5,
+    borderColor: '#e0e0e0',
+  },
+  sideBarTab: {
+    padding: 16,
+  },
+  container: {
+    flex: 1,
+    overflow: 'hidden'
+  },
+  pages: {
+    flex: 1
   }
 }
